@@ -12,3 +12,8 @@ Mode 3 , Tibber Pricing “Cheap”:
 Start recommendation sent to heatpump for warmwater or heating according to the heatpump SG-Ready settings.
 Mode 4, Tibber Pricing “Very Cheap”:
 Forced start of the heatpump according to the EVU and SG_ready settings of your heatpump.
+
+Prerequisites:
+- 2 Shelly devices
+- iobroker or other home automation server installed 
+- NodRed installed
