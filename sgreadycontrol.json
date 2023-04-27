@@ -1,0 +1,468 @@
+[
+    {
+        "id": "724046240145a597",
+        "type": "tab",
+        "label": "TibberPricing",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b69aa836be2d62d7",
+        "type": "inject",
+        "z": "724046240145a597",
+        "name": "TriggerPreisabfrage",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 100,
+        "wires": [
+            [
+                "db3720fa177c3932"
+            ]
+        ]
+    },
+    {
+        "id": "089683bfa25d14a8",
+        "type": "ioBroker out",
+        "z": "724046240145a597",
+        "name": "SG-Ready-Switch",
+        "topic": "shelly.addyourShellydevice",
+        "ack": "false",
+        "autoCreate": "false",
+        "stateName": "",
+        "role": "",
+        "payloadType": "",
+        "readonly": "",
+        "stateUnit": "",
+        "stateMin": "",
+        "stateMax": "",
+        "x": 1210,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "db3720fa177c3932",
+        "type": "template",
+        "z": "724046240145a597",
+        "name": "CurrentPrice",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{\n  viewer {\n    homes {\n      currentSubscription{\n        priceInfo{\n          current{\n            total\n            level\n          }\n        }\n      }\n    }\n  }\n}\n",
+        "output": "str",
+        "x": 370,
+        "y": 100,
+        "wires": [
+            [
+                "6794adf779aa85f7"
+            ]
+        ]
+    },
+    {
+        "id": "6794adf779aa85f7",
+        "type": "tibber-query",
+        "z": "724046240145a597",
+        "name": "TibberCurrentPriceLevel",
+        "active": true,
+        "apiEndpointRef": "08aa3f585b949304",
+        "x": 590,
+        "y": 100,
+        "wires": [
+            [
+                "73146957f51beb01"
+            ]
+        ]
+    },
+    {
+        "id": "73146957f51beb01",
+        "type": "function",
+        "z": "724046240145a597",
+        "name": "ExtractCurrPriceLevel",
+        "func": "var msg3 = { payload: msg.payload.viewer.homes[0].currentSubscription.priceInfo.current.level };\nvar msg4 = { payload: msg.payload.viewer.homes[0].currentSubscription.priceInfo.current.total };\nreturn [ msg3, msg4 ];",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 100,
+        "wires": [
+            [
+                "50f1990ea6918521",
+                "0a768a9bae72360d"
+            ],
+            [
+                "f132ec0c63ec7c92"
+            ]
+        ]
+    },
+    {
+        "id": "f132ec0c63ec7c92",
+        "type": "ioBroker out",
+        "z": "724046240145a597",
+        "name": "TibberCurrPrice",
+        "topic": "0_userdata.0.TibberHourlyPrice",
+        "ack": "false",
+        "autoCreate": "false",
+        "stateName": "",
+        "role": "",
+        "payloadType": "",
+        "readonly": "",
+        "stateUnit": "",
+        "stateMin": "",
+        "stateMax": "",
+        "x": 1200,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "50f1990ea6918521",
+        "type": "ioBroker out",
+        "z": "724046240145a597",
+        "name": "TibberPriceLevel",
+        "topic": "0_userdata.0.TibberPriceLevel",
+        "ack": "false",
+        "autoCreate": "false",
+        "stateName": "",
+        "role": "",
+        "payloadType": "",
+        "readonly": "",
+        "stateUnit": "",
+        "stateMin": "",
+        "stateMax": "",
+        "x": 1210,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "0a768a9bae72360d",
+        "type": "switch",
+        "z": "724046240145a597",
+        "name": "DecidePriceLevel",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "VERY CHEAP",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "CHEAP",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "NORMAL",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "EXPENSIVE",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "VERY EXPENSIVE",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": true,
+        "outputs": 5,
+        "x": 230,
+        "y": 600,
+        "wires": [
+            [
+                "1e94c2a69453a232"
+            ],
+            [
+                "0becce2d7c805833"
+            ],
+            [
+                "719c999fb57ed62c"
+            ],
+            [
+                "5e1f9cdac0bebc34"
+            ],
+            [
+                "f28be8a1db0f760b"
+            ]
+        ]
+    },
+    {
+        "id": "f28be8a1db0f760b",
+        "type": "change",
+        "z": "724046240145a597",
+        "name": "VeryExpensive",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 680,
+        "wires": [
+            [
+                "089683bfa25d14a8",
+                "1726da974ecb9962"
+            ]
+        ]
+    },
+    {
+        "id": "719c999fb57ed62c",
+        "type": "change",
+        "z": "724046240145a597",
+        "name": "Normal",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 480,
+        "y": 600,
+        "wires": [
+            [
+                "089683bfa25d14a8",
+                "3e792e337fbbd4d1"
+            ]
+        ]
+    },
+    {
+        "id": "5e1f9cdac0bebc34",
+        "type": "change",
+        "z": "724046240145a597",
+        "name": "Expensive",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 640,
+        "wires": [
+            [
+                "089683bfa25d14a8",
+                "3e792e337fbbd4d1"
+            ]
+        ]
+    },
+    {
+        "id": "1e94c2a69453a232",
+        "type": "change",
+        "z": "724046240145a597",
+        "name": "VeryCheap",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 520,
+        "wires": [
+            [
+                "089683bfa25d14a8",
+                "3e792e337fbbd4d1"
+            ]
+        ]
+    },
+    {
+        "id": "0becce2d7c805833",
+        "type": "change",
+        "z": "724046240145a597",
+        "name": "Cheap",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 470,
+        "y": 560,
+        "wires": [
+            [
+                "089683bfa25d14a8",
+                "f9f15037aeafbc22"
+            ]
+        ]
+    },
+    {
+        "id": "3e792e337fbbd4d1",
+        "type": "ioBroker out",
+        "z": "724046240145a597",
+        "name": "EVU-Sperre-Switch",
+        "topic": "shelly.addyourShellydevice",
+        "ack": "false",
+        "autoCreate": "false",
+        "stateName": "",
+        "role": "",
+        "payloadType": "",
+        "readonly": "",
+        "stateUnit": "",
+        "stateMin": "",
+        "stateMax": "",
+        "x": 1210,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "2e7776df6ba4d22d",
+        "type": "countdown",
+        "z": "724046240145a597",
+        "name": "EVU-Sperre-Stop",
+        "topic": "EVUSperreStop",
+        "payloadTimerStart": "true",
+        "payloadTimerStartType": "bool",
+        "payloadTimerStop": "false",
+        "payloadTimerStopType": "bool",
+        "timer": "7200",
+        "resetWhileRunning": false,
+        "outputOnReset": true,
+        "setTimeToNewWhileRunning": false,
+        "startCountdownOnControlMessage": false,
+        "x": 950,
+        "y": 400,
+        "wires": [
+            [
+                "3e792e337fbbd4d1"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "f9f15037aeafbc22",
+        "type": "Invert",
+        "z": "724046240145a597",
+        "name": "Invert",
+        "x": 690,
+        "y": 460,
+        "wires": [
+            [
+                "3e792e337fbbd4d1"
+            ]
+        ]
+    },
+    {
+        "id": "1726da974ecb9962",
+        "type": "Invert",
+        "z": "724046240145a597",
+        "name": "Invert",
+        "x": 690,
+        "y": 400,
+        "wires": [
+            [
+                "4c78590ce2daaa44"
+            ]
+        ]
+    },
+    {
+        "id": "b3235d395698fa84",
+        "type": "inject",
+        "z": "724046240145a597",
+        "name": "24hReset",
+        "props": [
+            {
+                "p": "daycount",
+                "v": "0",
+                "vt": "num"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 120,
+        "y": 340,
+        "wires": [
+            [
+                "4c78590ce2daaa44"
+            ]
+        ]
+    },
+    {
+        "id": "4c78590ce2daaa44",
+        "type": "function",
+        "z": "724046240145a597",
+        "name": "EVUSperreMax3proTag",
+        "func": "var count = context.get('count') || 0;\nif (typeof msg.daycount != \"undefined\") {\n    context.set('count', 0);\n    msg.payload = false;\n}\nelse {\n    if ((count < 2) ) {\n        msg.payload = true;\n        count += 1;\n        context.set('count', count);\n    }\n    else {\n        msg.payload = false;    \n    }\n}\nreturn [msg];",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 340,
+        "wires": [
+            [
+                "2e7776df6ba4d22d"
+            ]
+        ]
+    },
+    {
+        "id": "08aa3f585b949304",
+        "type": "tibber-api-endpoint",
+        "queryUrl": "https://api.tibber.com/v1-beta/gql",
+        "feedConnectionTimeout": "30",
+        "feedTimeout": "60",
+        "queryRequestTimeout": "30",
+        "name": ""
+    }
+]
